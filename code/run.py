@@ -5,6 +5,9 @@ import json
 import sqlite3
 import psutil
 import subprocess
+import threading
+import time
+from telegram import Bot
 from telegram.ext import Updater
 from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler, Filters
@@ -12,8 +15,11 @@ from telegram.ext import MessageHandler, Filters
 def main():
 
     telegram_token = os.environ['TOKEN']
+    telegram_user_id = os.environ['USERID']
 
-    updater = Updater(token=telegram_token)
+    motion_bot = Bot(token=telegram_token)
+    #updater = Updater(token=telegram_token)
+    updater = Updater(bot=motion_bot)
     dispatcher = updater.dispatcher
 
     #Declare handlers
@@ -33,6 +39,10 @@ def main():
     dispatcher.add_handler(motion_stop_handler)
     dispatcher.add_handler(echo_handler)
     dispatcher.add_handler(unknown_handler)
+
+
+    th_update = threading.Thread(target=check_update_loop,args=(motion_bot,telegram_user_id))
+    th_update.start()
 
     updater.start_polling()
 
@@ -87,6 +97,31 @@ def loggingSetup():
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         level=logging.INFO
     )
+
+def check_update_loop(bot, user_id):
+    while True:
+      #bot.send_chat_action(chat_id=user_id, action=telegram.ChatAction.TYPING)
+
+      count = 0
+
+      conn = sqlite3.connect('/data/motion/db/motion.sqlite')
+      cursor = conn.cursor()
+      cursor.execute('SELECT * FROM security WHERE event_ack = 0')
+      unack_events = cursor.fetchall()
+
+      for event in unack_events:
+        if event[3] == 8:
+          count += 1
+          bot.send_message(chat_id=user_id, text="New event found with time: " + event[4])
+          bot.send_video(chat_id=user_id, video=open(event[1], 'rb'), supports_streaming=True)
+          update_query = "UPDATE security SET event_ack = 1 WHERE event_time_stamp == '" + str(event[5]) + "';"
+          cursor.execute(update_query)
+
+      cursor.close()
+      conn.commit()
+      conn.close()
+
+      time.sleep(5)
 
 def updates(bot, update):
     count = 0
