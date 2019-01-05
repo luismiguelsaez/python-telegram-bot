@@ -7,6 +7,7 @@ import psutil
 import subprocess
 import threading
 import time
+import datetime
 from telegram import Bot
 from telegram.ext import Updater
 from telegram.ext import CommandHandler
@@ -102,19 +103,17 @@ def check_update_loop(bot, user_id):
     while True:
       #bot.send_chat_action(chat_id=user_id, action=telegram.ChatAction.TYPING)
 
-      count = 0
-
       conn = sqlite3.connect('/data/motion/db/motion.sqlite')
       cursor = conn.cursor()
-      cursor.execute('SELECT * FROM video_record WHERE event_ack = 0 AND video_end = 1')
+      cursor.execute('SELECT * FROM security WHERE event_ack = 0 and event_end = 1')
       unack_events = cursor.fetchall()
 
       for event in unack_events:
         if event[3] == 8:
-          count += 1
-          bot.send_message(chat_id=user_id, text="New event found with time: " + event[4])
+          print("Found event [" + str(event) + "]")
+          bot.send_message(chat_id=user_id, text="New event found with time: " + str(event[4]))
           bot.send_video(chat_id=user_id, video=open(event[1], 'rb'), supports_streaming=True)
-          update_query = "UPDATE video_record SET event_ack = 1 WHERE event_time_stamp == '" + str(event[5]) + "';"
+          update_query = "UPDATE security SET event_ack = 1 WHERE event_time_stamp == '" + str(event[5]) + "';"
           cursor.execute(update_query)
 
       cursor.close()
