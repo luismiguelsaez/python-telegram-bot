@@ -138,10 +138,10 @@ def motion_stop(bot, update):
         stop_status = process.run("killall " + motion_process_name)
 
         if stop_status > 0:
-            print("Error stopping motion process: " + str(process_status))
+            print("Error stopping motion process: " + str(stop_status))
             bot.send_message(
                 chat_id=update.message.chat_id,
-                text="Error stopping motion process: " + str(process_status)
+                text="Error stopping motion process: " + str(stop_status)
             )
         else:
             print("Motion stopped successfully")
