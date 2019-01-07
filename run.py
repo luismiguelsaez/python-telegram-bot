@@ -80,7 +80,7 @@ def check_update_loop(bot, user_id):
         conn.commit()
         conn.close()
 
-        time.sleep(motion_db_update_check_interval)
+        time.sleep(int(motion_db_update_check_interval))
 
 
 def updates(bot, update):
