@@ -128,7 +128,7 @@ def motion_stop(bot, update):
 
     motion_status = process.check_running(motion_process_name)
 
-    if motion_status != 0:
+    if motion_status <= 0:
         print("Motion not currently running")
         bot.send_message(
             chat_id=update.message.chat_id,
