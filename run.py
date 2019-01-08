@@ -34,6 +34,7 @@ def main():
     updates_handler = CommandHandler('updates', updates)
     motion_start_handler = CommandHandler('motionstart', motion_start)
     motion_stop_handler = CommandHandler('motionstop', motion_stop)
+    motion_take_video_handler = CommandHandler('motiontakevideo', motion_take_video)
     unknown_handler = MessageHandler(Filters.command, unknown)
 
     # Start handlers
@@ -41,6 +42,7 @@ def main():
     dispatcher.add_handler(updates_handler)
     dispatcher.add_handler(motion_start_handler)
     dispatcher.add_handler(motion_stop_handler)
+    dispatcher.add_handler(motion_take_video_handler)
     dispatcher.add_handler(unknown_handler)
 
     th_update = threading.Thread(target=check_update_loop,args=(bot_instance,telegram_user_id))
@@ -120,6 +122,35 @@ def updates(bot, update):
     cursor.close()
     conn.commit()
     conn.close()
+
+
+def motion_take_video(bot, update):
+
+    motion_process_name = file.get_param_from_file('config/main.cfg', 'Motion', 'exec_bin')
+
+    motion_status = process.check_running(motion_process_name)
+
+    if motion_status <= 0:
+        print("Motion not currently running")
+        bot.send_message(
+            chat_id=update.message.chat_id,
+            text="Motion not currently running"
+        )
+    else:
+        take_video_status = process.run("killall -s SIGUSR1 " + motion_process_name)
+
+        if take_status > 0:
+            print("Error with command: " + str(take_video_status))
+            bot.send_message(
+                chat_id=update.message.chat_id,
+                text="Error with command: " + str(take_video_status)
+            )
+        else:
+            print("Command sent successfully")
+            bot.send_message(
+                chat_id=update.message.chat_id,
+                text="Command sent successfully"
+            )
 
 
 def motion_stop(bot, update):
