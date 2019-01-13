@@ -88,7 +88,7 @@ def check_update_loop(bot, user_id):
                     chat_id=user_id, 
                     video=open(event[1], 'rb'), 
                     caption=str(event[4]),
-                    thumb=event_thumb_dest, 
+                    thumb=open(event_thumb_dest, 'rb'), 
                     supports_streaming=True)
 
                 update_query = "UPDATE security SET event_ack = 1 WHERE event_time_stamp == '" + str(event[5]) + "';"
