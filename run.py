@@ -55,6 +55,7 @@ def check_update_loop(bot, user_id):
 
     while True:
 
+        motion_data_dir = file.get_param_from_file('config/main.cfg', 'Motion', 'data_directory')
         motion_db_dir = file.get_param_from_file('config/main.cfg', 'Motion', 'db_directory')
         motion_db_file = file.get_param_from_file('config/main.cfg', 'Motion', 'db_file')
         motion_db_path = motion_db_dir + "/" + motion_db_file
@@ -73,8 +74,9 @@ def check_update_loop(bot, user_id):
         for event in unack_events:
             if event[3] == 8:
                 print("Found event [" + str(event) + "]")
-                bot.send_message(chat_id=user_id, text="New event found with time: " + str(event[4]))
-                bot.send_video(chat_id=user_id, video=open(event[1], 'rb'), supports_streaming=True)
+                event_thumb = motion_data_dir + "/" + str(event[5]) + ".jpg"
+                #bot.send_message(chat_id=user_id, text="New event found with time: " + str(event[4]))
+                bot.send_video(chat_id=user_id, video=open(event[1], 'rb'), caption=str(event[4]), supports_streaming=True)
                 update_query = "UPDATE security SET event_ack = 1 WHERE event_time_stamp == '" + str(event[5]) + "';"
                 cursor.execute(update_query)
 
