@@ -182,7 +182,7 @@ def motion_stop(bot, update):
             text="Motion not currently running"
         )
     else:
-        stop_status = process.run("killall " + motion_process_name)
+        stop_status = process.run("systemctl stop " + motion_process_name)
 
         if stop_status > 0:
             print("Error stopping motion process: " + str(stop_status))
@@ -211,7 +211,7 @@ def motion_start(bot, update):
             text="Motion already running with pid: " + str(motion_status)
         )
     else:
-        process_status = process.run(motion_process_name)
+        process_status = process.run("systemctl start " + motion_process_name)
 
         if process_status > 0:
             print("Error starting motion process: " + str(process_status))
