@@ -73,7 +73,7 @@ def camera_take_snap(bot, update):
 
         bot.send_photo(
             chat_id=update.message.chat_id, 
-            photo=open('/tmp/snapshot.jpg', 'r'), 
+            photo=open('/tmp/snapshot.jpg', 'rb'), 
             caption='Snapshot requested'
         )
 
