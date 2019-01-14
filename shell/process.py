@@ -17,13 +17,10 @@ def run(command):
 
     exec_command = command.split(' ')
 
-    return_code = -1
-
     try:
         p = subprocess.run(args=exec_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
         return_code = p.returncode
     except Exception as err:
-        print(p.stdout)
         return_code = 1
 
     return return_code
