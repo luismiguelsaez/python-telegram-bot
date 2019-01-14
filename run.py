@@ -58,8 +58,8 @@ def main():
 def camera_take_video(bot, update):
 
     video_output_ts = str(datetime.datetime.now().strftime("%Y%m%d%H%M%S"))
-    video_output_file = "/tmp/clip-" + video_output_ts + ".mp4"
-    video_status = process.run("raspivid -w 640 -h 480 -fps 25 -t 5000 -o - | ffmpeg -i - -an -r 8 -y -loglevel quiet -vcodec copy " + video_output_file)
+    video_output_file = "/tmp/clip-" + video_output_ts
+    video_status = process.run("raspivid -w 640 -h 480 -fps 25 -t 5000 -o " + video_output_file + ".raw")
 
     if video_status > 0:
         print("Error taking snapshot: " + str(video_status))
@@ -70,11 +70,20 @@ def camera_take_video(bot, update):
     else:
         print("Snapshot taken successfully")
 
-        bot.send_video(
-            chat_id=update.message.chat_id, 
-            video=open(video_output_file, 'rb'), 
-            caption="Clip TS [" + video_output_ts + "]"
-        )
+        video_convert_status = process.run("ffmpeg -i " + video_output_file + ".raw -an -r 8 -y -loglevel quiet -vcodec copy " + video_output_file + ".mp4")
+        
+        if video_convert_status > 0:
+            print("Error converting snapshot: " + str(video_convert_status))
+            bot.send_message(
+                chat_id=update.message.chat_id,
+                text="Error converting snapshot: " + str(video_status)
+            )
+        else:
+            bot.send_video(
+                chat_id=update.message.chat_id, 
+                video=open(video_output_file + ".mp4", 'rb'), 
+                caption="Clip TS [" + video_output_ts + "]"
+            )
 
 
 def camera_take_snap(bot, update):
