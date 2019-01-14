@@ -59,7 +59,7 @@ def main():
 
 def run_command(bot, update):
 
-    command_status = process.run_output("ls -lrt /bin")
+    command_status = process.run_output("tail -4 /tmp/motion.log")
 
     bot.send_message(
         chat_id=update.message.chat_id,
