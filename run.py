@@ -33,6 +33,7 @@ def main():
 
     # Declare handlers
     start_handler = CommandHandler('start', start)
+    run_command_handler = CommandHandler('runcmd', run_command)
     updates_handler = CommandHandler('updates', updates)
     motion_start_handler = CommandHandler('motionstart', motion_start)
     motion_stop_handler = CommandHandler('motionstop', motion_stop)
@@ -42,6 +43,7 @@ def main():
 
     # Start handlers
     dispatcher.add_handler(start_handler)
+    dispatcher.add_handler(run_command_handler)
     dispatcher.add_handler(updates_handler)
     dispatcher.add_handler(motion_start_handler)
     dispatcher.add_handler(motion_stop_handler)
@@ -53,6 +55,16 @@ def main():
     th_update.start()
 
     updater.start_polling()
+
+
+def run_command(bot, update):
+
+    command_status = process.run("ls -lrt /bin")
+
+    bot.send_message(
+        chat_id=update.message.chat_id,
+        text="Command output [" + str(command_status['code']) + "]: " + command_status['output']
+    )
 
 
 def camera_take_video(bot, update):
