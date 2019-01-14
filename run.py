@@ -61,6 +61,9 @@ def run_command(bot, update):
 
     command_status = process.run("ls -lrt /bin")
 
+    print("Command code: " + str(command_status['code']))
+    print("Command output: " + str(command_status['output']))
+
     bot.send_message(
         chat_id=update.message.chat_id,
         text="Command output: " + str(command_status['output'])
