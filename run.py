@@ -57,11 +57,11 @@ def camera_take_snap(bot, update):
     snap_output_file = '/tmp/snapshot.jpg'
     snap_status = process.run("raspistill -w 640 -h 480 -q 75 -th 640:480:50 -e jpg -o " + snap_output_file)
 
-    if stop_status > 0:
-        print("Error taking snapshot: " + str(stop_status))
+    if anap_status > 0:
+        print("Error taking snapshot: " + str(snap_status))
         bot.send_message(
             chat_id=update.message.chat_id,
-            text="Error taking snapshot: " + str(stop_status)
+            text="Error taking snapshot: " + str(snap_status)
         )
     else:
         print("Snapshot taken successfully")
@@ -71,11 +71,11 @@ def camera_take_snap(bot, update):
             text="Snapshot taken successfully [" + snap_output_file + "]"
         )
 
-        #bot.send_photo(
-        #    chat_id=update.message.chat_id, 
-        #    photo=open('/tmp/snapshot.jpg', 'r'), 
-        #    caption='Snapshot requested'
-        #)
+        bot.send_photo(
+            chat_id=update.message.chat_id, 
+            photo=open('/tmp/snapshot.jpg', 'r'), 
+            caption='Snapshot requested'
+        )
 
 
 def check_update_loop(bot, user_id):
