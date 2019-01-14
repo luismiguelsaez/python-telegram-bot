@@ -61,6 +61,11 @@ def camera_take_video(bot, update):
     video_output_file = "/tmp/clip-" + video_output_ts
     video_status = process.run("raspivid -w 640 -h 480 -fps 25 -t 5000 -o " + video_output_file + ".raw")
 
+    #p = subprocess.Popen(args=["raspivid","-w","640","-h","480","-fps","25","-t","1000","-o","-"],stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    #stdout,stderr = p.communicate()
+    #p2 = subprocess.Popen(args=["ffmpeg","-i","-","-an","-r","8","-y","-loglevel","quiet","-vcodec","copy",video_output_file + ".mp4"],stdout=subprocess.PIPE,stderr=subprocess.STDOUT,stdin=subprocess.PIPE)
+    #cvstdout,cvstderr = p2.communicate(stdout)
+
     if video_status > 0:
         print("Error taking snapshot: " + str(video_status))
         bot.send_message(
