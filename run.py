@@ -37,6 +37,7 @@ def main():
     motion_start_handler = CommandHandler('motionstart', motion_start)
     motion_stop_handler = CommandHandler('motionstop', motion_stop)
     camera_take_snap_handler = CommandHandler('camerasnap', camera_take_snap)
+    camera_take_video_handler = CommandHandler('cameravideo', camera_take_video)
     unknown_handler = MessageHandler(Filters.command, unknown)
 
     # Start handlers
@@ -45,12 +46,37 @@ def main():
     dispatcher.add_handler(motion_start_handler)
     dispatcher.add_handler(motion_stop_handler)
     dispatcher.add_handler(camera_take_snap_handler)
+    dispatcher.add_handler(camera_take_video_handler)
     dispatcher.add_handler(unknown_handler)
 
     th_update = threading.Thread(target=check_update_loop,args=(bot_instance,telegram_user_id))
     th_update.start()
 
     updater.start_polling()
+
+
+def camera_take_video(bot, update):
+
+    test.mp4
+
+    video_output_ts = str(datetime.datetime.now().strftime("%Y%m%d%H%M%S"))
+    video_output_file = "/tmp/clip-" + snap_output_ts + ".mp4"
+    video_status = process.run("raspivid -w 640 -h 480 -fps 25 -t 5000 -o - | ffmpeg -i - -an -r 8 -y -vcodec copy " + video_output_file)
+
+    if video_status > 0:
+        print("Error taking snapshot: " + str(video_status))
+        bot.send_message(
+            chat_id=update.message.chat_id,
+            text="Error taking snapshot: " + str(video_status)
+        )
+    else:
+        print("Snapshot taken successfully")
+
+        bot.send_video(
+            chat_id=update.message.chat_id, 
+            video=open(video_output_file, 'rb'), 
+            caption="Clip TS [" + video_output_ts + "]"
+        )
 
 
 def camera_take_snap(bot, update):
@@ -70,7 +96,7 @@ def camera_take_snap(bot, update):
 
         bot.send_photo(
             chat_id=update.message.chat_id, 
-            photo=open('/tmp/snapshot.jpg', 'rb'), 
+            photo=open(snap_output_file, 'rb'), 
             caption="Snapshot TS [" + snap_output_ts + "]"
         )
 
