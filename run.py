@@ -63,7 +63,7 @@ def run_command(bot, update):
 
     bot.send_message(
         chat_id=update.message.chat_id,
-        text="Command output [" + str(command_status['code']) + "]: " + command_status['output']
+        text="Command output [" + str(command_status['code']) + "]: " + str(command_status['output'])
     )
 
 
