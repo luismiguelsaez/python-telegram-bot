@@ -57,8 +57,6 @@ def main():
 
 def camera_take_video(bot, update):
 
-    test.mp4
-
     video_output_ts = str(datetime.datetime.now().strftime("%Y%m%d%H%M%S"))
     video_output_file = "/tmp/clip-" + snap_output_ts + ".mp4"
     video_status = process.run("raspivid -w 640 -h 480 -fps 25 -t 5000 -o - | ffmpeg -i - -an -r 8 -y -vcodec copy " + video_output_file)
