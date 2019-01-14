@@ -35,7 +35,7 @@ def main():
     updates_handler = CommandHandler('updates', updates)
     motion_start_handler = CommandHandler('motionstart', motion_start)
     motion_stop_handler = CommandHandler('motionstop', motion_stop)
-    motion_take_video_handler = CommandHandler('motiontakevideo', motion_take_video)
+    camera_take_snap_handler = CommandHandler('camerasnap', camera_take_snap)
     unknown_handler = MessageHandler(Filters.command, unknown)
 
     # Start handlers
@@ -43,13 +43,36 @@ def main():
     dispatcher.add_handler(updates_handler)
     dispatcher.add_handler(motion_start_handler)
     dispatcher.add_handler(motion_stop_handler)
-    dispatcher.add_handler(motion_take_video_handler)
+    dispatcher.add_handler(camera_take_snap_handler)
     dispatcher.add_handler(unknown_handler)
 
     th_update = threading.Thread(target=check_update_loop,args=(bot_instance,telegram_user_id))
     th_update.start()
 
     updater.start_polling()
+
+
+def camera_take_snap(bot, update):
+
+    snap_status = process.run("raspistill -w 640 -h 480 -q 75 -th 640:480:50 -e jpg -o /tmp/snapshot.jpg")
+
+    if stop_status > 0:
+        print("Error taking snapshot: " + str(stop_status))
+        bot.send_message(
+            chat_id=update.message.chat_id,
+            text="Error taking snapshot: " + str(stop_status)
+        )
+    else:
+        print("Snapshot taken successfully")
+        bot.send_message(
+            chat_id=update.message.chat_id,
+            text="Snapshot taken successfully"
+        )
+        bot.send_photo(
+            chat_id=user_id, 
+            photo=open('/tmp/snapshot.jpg', 'rb'), 
+            caption=str('Snapshot requested'),
+        )
 
 
 def check_update_loop(bot, user_id):
@@ -138,35 +161,6 @@ def updates(bot, update):
     cursor.close()
     conn.commit()
     conn.close()
-
-
-def motion_take_video(bot, update):
-
-    motion_process_name = file.get_param_from_file('config/main.cfg', 'Motion', 'exec_bin')
-
-    motion_status = process.check_running(motion_process_name)
-
-    if motion_status <= 0:
-        print("Motion not currently running")
-        bot.send_message(
-            chat_id=update.message.chat_id,
-            text="Motion not currently running"
-        )
-    else:
-        take_video_status = process.run("killall -s SIGUSR1 " + motion_process_name)
-
-        if take_status > 0:
-            print("Error with command: " + str(take_video_status))
-            bot.send_message(
-                chat_id=update.message.chat_id,
-                text="Error with command: " + str(take_video_status)
-            )
-        else:
-            print("Command sent successfully")
-            bot.send_message(
-                chat_id=update.message.chat_id,
-                text="Command sent successfully"
-            )
 
 
 def motion_stop(bot, update):
