@@ -39,6 +39,6 @@ def run_output(command):
         result['output'] = p.stdout
     except Exception as err:
         result['code'] = return_code
-        result['output'] = err
+        result['output'] = str(err)
 
     return result
