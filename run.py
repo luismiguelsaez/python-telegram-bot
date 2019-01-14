@@ -3,6 +3,7 @@ import threading
 import sqlite3
 import os
 import time
+import datetime
 from PIL import Image
 from shell import process
 from configuration import file
@@ -54,7 +55,8 @@ def main():
 
 def camera_take_snap(bot, update):
 
-    snap_output_file = '/tmp/snapshot.jpg'
+    snap_output_ts = str(datetime.datetime.now().strftime("%Y%m%d%H%M%S"))
+    snap_output_file = "/tmp/snapshot-" + snap_output_ts + ".jpg"
     snap_status = process.run("raspistill -w 640 -h 480 -q 75 -th 640:480:50 -e jpg -o " + snap_output_file)
 
     if snap_status > 0:
@@ -66,15 +68,10 @@ def camera_take_snap(bot, update):
     else:
         print("Snapshot taken successfully")
 
-        bot.send_message(
-            chat_id=update.message.chat_id,
-            text="Snapshot taken successfully [" + snap_output_file + "]"
-        )
-
         bot.send_photo(
             chat_id=update.message.chat_id, 
             photo=open('/tmp/snapshot.jpg', 'rb'), 
-            caption='Snapshot requested'
+            caption="Snapshot TS [" + snap_output_ts + "]"
         )
 
 
