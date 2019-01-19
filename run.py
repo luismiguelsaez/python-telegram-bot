@@ -4,6 +4,7 @@ import sqlite3
 import os
 import time
 import datetime
+import json
 from PIL import Image
 from shell import process
 from configuration import file
@@ -35,6 +36,7 @@ def main():
     start_handler = CommandHandler('start', start)
     run_command_handler = CommandHandler('runcmd', run_command)
     updates_handler = CommandHandler('updates', updates)
+    info_handler = CommandHandler('info', info)
     motion_start_handler = CommandHandler('motionstart', motion_start)
     motion_stop_handler = CommandHandler('motionstop', motion_stop)
     camera_take_snap_handler = CommandHandler('camerasnap', camera_take_snap)
@@ -45,6 +47,7 @@ def main():
     dispatcher.add_handler(start_handler)
     dispatcher.add_handler(run_command_handler)
     dispatcher.add_handler(updates_handler)
+    dispatcher.add_handler(info_handler)
     dispatcher.add_handler(motion_start_handler)
     dispatcher.add_handler(motion_stop_handler)
     dispatcher.add_handler(camera_take_snap_handler)
@@ -55,6 +58,25 @@ def main():
     th_update.start()
 
     updater.start_polling()
+
+
+def info(bot, update):
+
+    try:
+        ip_request = requests.get("https://ifconfig.co/json")
+    except Exception as err:
+        bot.send_message(
+            chat_id=update.message.chat_id,
+            text="Error getting ifconfig info: " + str(err)
+        )
+        pass
+
+    if ip_request.status_code == "200":
+        ip_request_json = json.loads(ip_request.text)
+            bot.send_message(
+            chat_id=update.message.chat_id,
+            text="My IP is " + ip_request_json['ip'] + ", and I am in " + ip_request_json['city'] + " (" + ip_request_json['country'] + ")"
+        )
 
 
 def run_command(bot, update):
