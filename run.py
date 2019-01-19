@@ -73,7 +73,7 @@ def info(bot, update):
 
     if ip_request.status_code == "200":
         ip_request_json = json.loads(ip_request.text)
-            bot.send_message(
+        bot.send_message(
             chat_id=update.message.chat_id,
             text="My IP is " + ip_request_json['ip'] + ", and I am in " + ip_request_json['city'] + " (" + ip_request_json['country'] + ")"
         )
