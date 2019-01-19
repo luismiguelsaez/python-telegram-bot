@@ -83,7 +83,7 @@ def info(bot, update):
     else:
         bot.send_message(
             chat_id=update.message.chat_id,
-            text="Got unexpected status code: " + ip_request.status_code
+            text="Got unexpected status code: " + str(ip_request.status_code)
         )
 
 
