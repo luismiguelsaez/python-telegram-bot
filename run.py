@@ -63,7 +63,7 @@ def main():
 
 def info(bot, update):
 
-    valid_http_codes = ["200","404"]
+    valid_http_codes = [200]
 
     try:
         ip_request = requests.get("https://ifconfig.co/json")
