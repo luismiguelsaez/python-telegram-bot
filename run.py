@@ -4,6 +4,7 @@ import sqlite3
 import os
 import time
 import datetime
+import requests
 import json
 from PIL import Image
 from shell import process
