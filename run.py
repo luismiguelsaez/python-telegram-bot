@@ -2,6 +2,7 @@ import logging
 import threading
 import sqlite3
 import os
+import glob
 import time
 import datetime
 import requests
@@ -179,14 +180,13 @@ def check_update_loop(bot, user_id):
             if event[3] == 8:
                 print("Found event [" + str(event) + "]")
 
-                event_thumb_orig = motion_data_dir + "/" + str(event[5]) + ".jpg"
+                event_thumb_orig = glob.glob(motion_data_dir + "/" + str(event[5]) + "*.jpg")[0]
                 event_thumb_dest = "/tmp/" + str(event[5]) + "-thumb.jpg"
                 event_thumb = Image.open(event_thumb_orig)
                 size = 90,90
                 event_thumb.thumbnail(size)
                 event_thumb.save(event_thumb_dest,"JPEG")
 
-                #bot.send_message(chat_id=user_id, text="New event found with time: " + str(event[4]))
                 bot.send_video(
                     chat_id=user_id, 
                     video=open(event[1], 'rb'), 
