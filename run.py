@@ -167,7 +167,7 @@ def check_update_loop(bot, user_id):
         motion_db_update_check_interval = file.get_param_from_file('config/main.cfg', 'Motion', 'db_update_check_interval')
 
         try:
-            conn = sqlite3.connect(motion_db_path)
+            conn = sqlite3.connect(motion_db_path,isolation_level=None)
         except sqlite3.OperationalError as err:
             print("Error opening database [" + motion_db_path + "]: {0}".format(err))
             exit(0)
@@ -180,20 +180,29 @@ def check_update_loop(bot, user_id):
             if event[3] == 8:
                 print("Found event [" + str(event) + "]")
 
-                event_thumb_orig = glob.glob(motion_data_dir + "/" + str(event[5]) + "*.jpg")[0]
-                event_thumb_dest = "/tmp/" + str(event[5]) + "-thumb.jpg"
-                event_thumb = Image.open(event_thumb_orig)
-                size = 90,90
-                event_thumb.thumbnail(size)
-                event_thumb.save(event_thumb_dest,"JPEG")
+                event_thumb_orig = glob.glob(motion_data_dir + "/" + str(event[5]) + "*.jpg")
 
-                bot.send_video(
+                if len(event_thumb_orig) > 0:
+                  event_thumb_dest = "/tmp/" + str(event[5]) + "-thumb.jpg"
+                  event_thumb = Image.open(event_thumb_orig[0])
+                  size = 90,90
+                  event_thumb.thumbnail(size)
+                  event_thumb.save(event_thumb_dest,"JPEG")
+
+                  bot.send_video(
                     chat_id=user_id, 
                     video=open(event[1], 'rb'), 
                     caption=str(event[4]),
                     thumb=open(event_thumb_dest, 'rb'), 
                     supports_streaming=True)
 
+                else:
+                  bot.send_video(
+                    chat_id=user_id,
+                    video=open(event[1], 'rb'),
+                    caption=str(event[4]),
+                    supports_streaming=True)
+  
                 update_query = "UPDATE security SET event_ack = 1 WHERE event_time_stamp == '" + str(event[5]) + "';"
                 cursor.execute(update_query)
 
