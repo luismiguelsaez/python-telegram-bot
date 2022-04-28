@@ -9,8 +9,20 @@ import threading
 
 def loopWatcher(update: Update, context: CallbackContext) -> None:
     while True:
-        update.message.reply_text("Loop message")
-        sleep(1)
+        con = sqlite3.connect('/data/motion/db/motion.sqlite')
+        cur = con.cursor()
+        cur.execute('SELECT * FROM security WHERE event_end = 1 AND event_ack = 0')
+        rows = cur.fetchall()
+        for row in rows: 
+            update.message.reply_video(open(row[1], 'rb'))
+            update_query = 'UPDATE security SET event_ack = 1 WHERE filename LIKE "{}"'.format(row[1])
+            cur.execute(update_query)
+
+        con.commit()
+        con.close()
+
+        sleep(5)
+
         if exitLoopWatcher.is_set():
             break
 
