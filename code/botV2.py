@@ -3,6 +3,30 @@ from telegram.ext import Updater, CommandHandler, CallbackContext
 import os
 import requests
 from time import sleep
+import sqlite3
+import threading
+
+
+def loopWatcher(update: Update, context: CallbackContext) -> None:
+    while True:
+        update.message.reply_text("Loop message")
+        sleep(1)
+        if exitLoopWatcher.is_set():
+            break
+
+def startWatcher(update: Update, context: CallbackContext) -> None:
+    t1 = threading.Thread(target=loopWatcher, args=(update, context)).start() 
+
+def stopWatcher(update: Update, context: CallbackContext) -> None:
+    exitLoopWatcher.set()
+
+def getDatabaseUpdates(update: Update, context: CallbackContext) -> None:
+    con = sqlite3.connect('/data/motion/db/motion.sqlite')
+    cur = con.cursor()
+    cur.execute('SELECT * FROM security')
+    rows = cur.fetchall()
+    for row in rows: 
+        update.message.reply_video(open(row[1], 'rb'))
 
 def getIfcfg(update: Update, context: CallbackContext) -> None:
     response = requests.get(url="http://ifconfig.co/ip")
@@ -11,10 +35,6 @@ def getIfcfg(update: Update, context: CallbackContext) -> None:
 def hello(update: Update, context: CallbackContext) -> None:
     update.message.reply_text("Hello {} {}".format(update.effective_user.id, update.effective_user.first_name))
 
-def startLoop(update: Update, context: CallbackContext) -> None:
-    while True:
-        update.message.reply_text("Loop message")
-        sleep(1)
 
 if 'TOKEN' not in os.environ:
     print("Error: TOKEN variable not found in environment")
@@ -22,10 +42,14 @@ if 'TOKEN' not in os.environ:
 else:
     telegramToken = os.environ['TOKEN']
 
+exitLoopWatcher = threading.Event()
+
 updater = Updater(telegramToken)
 updater.dispatcher.add_handler(CommandHandler('hello', hello))
 updater.dispatcher.add_handler(CommandHandler('ip', getIfcfg))
-updater.dispatcher.add_handler(CommandHandler('loop', startLoop))
+updater.dispatcher.add_handler(CommandHandler('db', getDatabaseUpdates))
+updater.dispatcher.add_handler(CommandHandler('start', startWatcher))
+updater.dispatcher.add_handler(CommandHandler('stop', stopWatcher))
 
 updater.start_polling()
 updater.idle()

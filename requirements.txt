@@ -2,3 +2,4 @@ python-telegram-bot
 requests
 psutil
 subprocess32
+pysqlite3
