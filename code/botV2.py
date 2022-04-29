@@ -84,7 +84,7 @@ def opsMotion(update: Update, context: CallbackContext) -> None:
     if res != 0:
         update.message.repli_text("Command returned error: {}".format(str(res)))
     else:
-        update.message.repli_text("Command executed: {}".format(op)
+        update.message.repli_text("Command executed: {}".format(op))
 
 def getIfcfg(update: Update, context: CallbackContext) -> None:
     response = requests.get(url="http://ifconfig.co/ip")
