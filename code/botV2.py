@@ -78,7 +78,7 @@ def opsMotion(update: Update, context: CallbackContext) -> None:
     else:
         op = "start"
 
-    command = "sudo systemctl motion-daemon {}".format(op)
+    command = "sudo systemctl {} motion-daemon".format(op)
     res = os.system(command)
 
     if res != 0:
