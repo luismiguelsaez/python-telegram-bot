@@ -5,6 +5,7 @@ import requests
 from time import sleep
 import sqlite3
 import threading
+import datetime
 
 
 def loopWatcher(update: Update, context: CallbackContext) -> None:
@@ -31,6 +32,17 @@ def startWatcher(update: Update, context: CallbackContext) -> None:
 
 def stopWatcher(update: Update, context: CallbackContext) -> None:
     exitLoopWatcher.set()
+
+def getStillImage(update: Update, context: CallbackContext) -> None:
+    now = datetime.datetime.now()
+    nowStr = now.strftime('%Y%m%d%H%M%S')
+    command = "raspistill -o /tmp/{}.jpg".format(nowStr)
+    res = os.system(command)
+
+    if res != 0:
+        update.message.repli_text("Command returned error: {}".format(str(res)))
+    else:
+        update.message.reply_video(open("/tmp/{}.jpg".format(nowStr), 'rb'))
 
 def getDatabaseUpdates(update: Update, context: CallbackContext) -> None:
     con = sqlite3.connect('/data/motion/db/motion.sqlite')
@@ -62,6 +74,7 @@ updater.dispatcher.add_handler(CommandHandler('ip', getIfcfg))
 updater.dispatcher.add_handler(CommandHandler('db', getDatabaseUpdates))
 updater.dispatcher.add_handler(CommandHandler('start', startWatcher))
 updater.dispatcher.add_handler(CommandHandler('stop', stopWatcher))
+updater.dispatcher.add_handler(CommandHandler('img', getStillImage))
 
 updater.start_polling()
 updater.idle()
