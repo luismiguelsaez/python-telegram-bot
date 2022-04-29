@@ -40,7 +40,7 @@ def getStillImage(update: Update, context: CallbackContext) -> None:
     res = os.system(command)
 
     if res != 0:
-        update.message.repli_text("Command returned error: {}".format(str(res)))
+        update.message.reply_text("Command returned error: {}".format(str(res)))
     else:
         update.message.reply_photo(open("/tmp/{}.jpg".format(nowStr), 'rb'))
 
@@ -55,12 +55,12 @@ def getClip(update: Update, context: CallbackContext) -> None:
     res = os.system(command)
 
     if res != 0:
-        update.message.repli_text("Command returned error: {}".format(str(res)))
+        update.message.reply_text("Command returned error: {}".format(str(res)))
     else:
         transCmd = "MP4Box -fps 30 -add /tmp/{}.h264 /tmp/{}.mp4".format(nowStr, nowStr)
         resTrans = os.system(transCmd)
         if resTrans != 0:
-            update.message.repli_text("Transcode command returned error: {}".format(str(resTrans)))
+            update.message.reply_text("Transcode command returned error: {}".format(str(resTrans)))
         else:
             update.message.reply_video(open("/tmp/{}.mp4".format(nowStr), 'rb'))
 
@@ -82,9 +82,9 @@ def opsMotion(update: Update, context: CallbackContext) -> None:
     res = os.system(command)
 
     if res != 0:
-        update.message.repli_text("Command returned error: {}".format(str(res)))
+        update.message.reply_text("Command returned error: {}".format(str(res)))
     else:
-        update.message.repli_text("Command executed: {}".format(op))
+        update.message.reply_text("Command executed: {}".format(op))
 
 def getIfcfg(update: Update, context: CallbackContext) -> None:
     response = requests.get(url="http://ifconfig.co/ip")
