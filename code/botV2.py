@@ -44,6 +44,17 @@ def getStillImage(update: Update, context: CallbackContext) -> None:
     else:
         update.message.reply_photo(open("/tmp/{}.jpg".format(nowStr), 'rb'))
 
+def getClip(update: Update, context: CallbackContext) -> None:
+    now = datetime.datetime.now()
+    nowStr = now.strftime('%Y%m%d%H%M%S')
+    command = "raspivid -w 400 -h 300 -fps 15 -t 2000 -o /tmp/{}.mpeg".format(nowStr)
+    res = os.system(command)
+
+    if res != 0:
+        update.message.repli_text("Command returned error: {}".format(str(res)))
+    else:
+        update.message.reply_video(open("/tmp/{}.mpeg".format(nowStr), 'rb'))
+
 def getDatabaseUpdates(update: Update, context: CallbackContext) -> None:
     con = sqlite3.connect('/data/motion/db/motion.sqlite')
     cur = con.cursor()
@@ -75,6 +86,7 @@ updater.dispatcher.add_handler(CommandHandler('db', getDatabaseUpdates))
 updater.dispatcher.add_handler(CommandHandler('start', startWatcher))
 updater.dispatcher.add_handler(CommandHandler('stop', stopWatcher))
 updater.dispatcher.add_handler(CommandHandler('img', getStillImage))
+updater.dispatcher.add_handler(CommandHandler('video', getStillImage))
 
 updater.start_polling()
 updater.idle()
