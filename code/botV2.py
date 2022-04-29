@@ -42,7 +42,7 @@ def getStillImage(update: Update, context: CallbackContext) -> None:
     if res != 0:
         update.message.repli_text("Command returned error: {}".format(str(res)))
     else:
-        update.message.reply_video(open("/tmp/{}.jpg".format(nowStr), 'rb'))
+        update.message.reply_photo(open("/tmp/{}.jpg".format(nowStr), 'rb'))
 
 def getDatabaseUpdates(update: Update, context: CallbackContext) -> None:
     con = sqlite3.connect('/data/motion/db/motion.sqlite')
