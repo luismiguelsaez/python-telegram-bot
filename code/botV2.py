@@ -86,7 +86,7 @@ updater.dispatcher.add_handler(CommandHandler('db', getDatabaseUpdates))
 updater.dispatcher.add_handler(CommandHandler('start', startWatcher))
 updater.dispatcher.add_handler(CommandHandler('stop', stopWatcher))
 updater.dispatcher.add_handler(CommandHandler('img', getStillImage))
-updater.dispatcher.add_handler(CommandHandler('video', getStillImage))
+updater.dispatcher.add_handler(CommandHandler('video', getClip))
 
 updater.start_polling()
 updater.idle()
