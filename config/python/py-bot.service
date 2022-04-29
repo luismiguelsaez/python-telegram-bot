@@ -1,0 +1,15 @@
+[Unit]
+Description=Python bot service
+After=network.target
+
+[Service]
+Environment=TOKEN=<bot token>
+User=pi
+Group=pi
+Type=simple
+Restart=always
+ExecStart=/usr/bin/python /home/pi/python-telegram-bot/code/botV2.py
+KillSignal=SIGKILL
+
+[Install]
+WantedBy=multi-user.target

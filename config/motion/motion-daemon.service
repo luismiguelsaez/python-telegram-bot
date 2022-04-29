@@ -1,0 +1,13 @@
+[Unit]
+Description=Systemd service for motion daemon
+After=network.target
+
+[Service]
+Type=forking
+User=pi
+Group=pi
+ExecStart=/usr/bin/motion -b -c /etc/motion/motion.conf -p /tmp/motion.pid -l /tmp/motion.log -d INFO
+PIDFile=/tmp/motion.pid
+
+[Install]
+WantedBy=multi-user.target
