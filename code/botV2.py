@@ -47,13 +47,13 @@ def getStillImage(update: Update, context: CallbackContext) -> None:
 def getClip(update: Update, context: CallbackContext) -> None:
     now = datetime.datetime.now()
     nowStr = now.strftime('%Y%m%d%H%M%S')
-    command = "raspivid -w 400 -h 300 -fps 15 -t 2000 -o /tmp/{}.mpeg".format(nowStr)
+    command = "raspivid -w 400 -h 300 -fps 15 -t 2000 -o /tmp/{}.h264".format(nowStr)
     res = os.system(command)
 
     if res != 0:
         update.message.repli_text("Command returned error: {}".format(str(res)))
     else:
-        update.message.reply_video(open("/tmp/{}.mpeg".format(nowStr), 'rb'))
+        update.message.reply_video(open("/tmp/{}.h264".format(nowStr), 'rb'))
 
 def getDatabaseUpdates(update: Update, context: CallbackContext) -> None:
     con = sqlite3.connect('/data/motion/db/motion.sqlite')
