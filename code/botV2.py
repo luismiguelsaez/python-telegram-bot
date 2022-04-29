@@ -72,6 +72,20 @@ def getDatabaseUpdates(update: Update, context: CallbackContext) -> None:
     for row in rows: 
         update.message.reply_video(open(row[1], 'rb'))
 
+def opsMotion(update: Update, context: CallbackContext) -> None:
+    if len(context.args) > 0:
+        op = context.args[0]
+    else:
+        op = "start"
+
+    command = "sudo systemctl motion-daemon {}".format(op)
+    res = os.system(command)
+
+    if res != 0:
+        update.message.repli_text("Command returned error: {}".format(str(res)))
+    else:
+        update.message.repli_text("Command executed: {}".format(op)
+
 def getIfcfg(update: Update, context: CallbackContext) -> None:
     response = requests.get(url="http://ifconfig.co/ip")
     update.message.reply_text(response.text)
@@ -96,6 +110,7 @@ updater.dispatcher.add_handler(CommandHandler('start', startWatcher))
 updater.dispatcher.add_handler(CommandHandler('stop', stopWatcher))
 updater.dispatcher.add_handler(CommandHandler('img', getStillImage))
 updater.dispatcher.add_handler(CommandHandler('video', getClip))
+updater.dispatcher.add_handler(CommandHandler('motion', opsMotion))
 
 updater.start_polling()
 updater.idle()
