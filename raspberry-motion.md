@@ -39,6 +39,9 @@ dtparam=eth_led0=4
  
 # Turn off Ethernet LNK LED
 dtparam=eth_led1=4
+
+# Turn off Camera module LED
+disable_camera_led=1
 ```
 
 # SQLite setup
