@@ -53,7 +53,12 @@ def getClip(update: Update, context: CallbackContext) -> None:
     if res != 0:
         update.message.repli_text("Command returned error: {}".format(str(res)))
     else:
-        update.message.reply_video(open("/tmp/{}.h264".format(nowStr), 'rb'))
+        transCmd = "MP4Box -fps 30 -add /tmp/{}.h264 /tmp/{}.mp4".format(nowStr, nowStr)
+        resTrans = os.system(transCmd)
+        if resTrans != 0:
+            update.message.repli_text("Transcode command returned error: {}".format(str(resTrans)))
+        else:
+            update.message.reply_video(open("/tmp/{}.h264".format(nowStr), 'rb'))
 
 def getDatabaseUpdates(update: Update, context: CallbackContext) -> None:
     con = sqlite3.connect('/data/motion/db/motion.sqlite')
