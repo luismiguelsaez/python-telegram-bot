@@ -47,7 +47,8 @@ def getStillImage(update: Update, context: CallbackContext) -> None:
 def getClip(update: Update, context: CallbackContext) -> None:
     now = datetime.datetime.now()
     nowStr = now.strftime('%Y%m%d%H%M%S')
-    command = "raspivid -w 400 -h 300 -fps 15 -t 2000 -o /tmp/{}.h264".format(nowStr)
+    duration = context.args[1]
+    command = "raspivid -w 400 -h 300 -fps 15 -t {} -o /tmp/{}.h264".format(str(duration), nowStr)
     res = os.system(command)
 
     if res != 0:
