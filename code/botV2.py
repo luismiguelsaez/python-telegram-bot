@@ -12,27 +12,33 @@ import logging
 def loopWatcher(update: Update, context: CallbackContext) -> None:
     logging.info("Starting database watcher")
     motionBot.sendMessage(chat_id=update.effective_user.id,text="Watcher started by user id: {}".format(update.effective_user.id))
+
+    con = sqlite3.connect('/data/motion/db/motion.sqlite')
+    cur = con.cursor()
+
     while True:
-        con = sqlite3.connect('/data/motion/db/motion.sqlite')
-        cur = con.cursor()
         cur.execute('SELECT * FROM security WHERE event_end = 1 AND event_ack = 0')
         rows = cur.fetchall()
 
         if len(rows) > 0:
             logging.debug("Found {} events".format(str(len(rows)))) 
+            print("Found {} events".format(str(len(rows)))) 
             for row in rows: 
                 #update.message.reply_video(open(row[1], 'rb'))
+                print("Watcher: sending video {}".format(row[1]))
                 motionBot.sendVideo(chat_id=update.effective_user.id,video=open(row[1], 'rb'))
                 update_query = 'UPDATE security SET event_ack = 1 WHERE filename LIKE "{}"'.format(row[1])
                 cur.execute(update_query)
 
             con.commit()
-            con.close()
 
         sleep(5)
 
         if exitLoopWatcher.is_set():
             break
+
+    print("Watcher: closing SQLite connection")
+    con.close()
 
 def startWatcher(update: Update, context: CallbackContext) -> None:
     t1 = threading.Thread(target=loopWatcher, args=(update, context)).start() 
