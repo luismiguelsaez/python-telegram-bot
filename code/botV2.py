@@ -26,7 +26,7 @@ def loopWatcher(update: Update, context: CallbackContext) -> None:
             for row in rows: 
                 #update.message.reply_video(open(row[1], 'rb'))
                 print("Watcher: sending video {}".format(row[1]))
-                motionBot.sendVideo(chat_id=update.effective_user.id,video=open(row[1], 'rb'))
+                motionBot.sendVideo(chat_id=update.effective_user.id,video=open(row[1], 'rb'), supports_streaming=True)
                 update_query = 'UPDATE security SET event_ack = 1 WHERE filename LIKE "{}"'.format(row[1])
                 cur.execute(update_query)
 
@@ -75,7 +75,7 @@ def getClip(update: Update, context: CallbackContext) -> None:
         if resTrans != 0:
             update.message.reply_text("Transcode command returned error: {}".format(str(resTrans)))
         else:
-            update.message.reply_video(open("/tmp/{}.mp4".format(nowStr), 'rb'))
+            update.message.reply_video(open("/tmp/{}.mp4".format(nowStr), 'rb'), supports_streaming=True)
 
 def getDatabaseUpdates(update: Update, context: CallbackContext) -> None:
     con = sqlite3.connect('/data/motion/db/motion.sqlite')
