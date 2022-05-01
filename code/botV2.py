@@ -1,4 +1,4 @@
-from telegram import Update
+from telegram import Update, Bot
 from telegram.ext import Updater, CommandHandler, CallbackContext
 import os
 import requests
@@ -6,26 +6,39 @@ from time import sleep
 import sqlite3
 import threading
 import datetime
+import logging
 
 
 def loopWatcher(update: Update, context: CallbackContext) -> None:
+    logging.info("Starting database watcher")
+    motionBot.sendMessage(chat_id=update.effective_user.id,text="Watcher started by user id: {}".format(update.effective_user.id))
+
+    con = sqlite3.connect('/data/motion/db/motion.sqlite')
+    cur = con.cursor()
+
     while True:
-        con = sqlite3.connect('/data/motion/db/motion.sqlite')
-        cur = con.cursor()
         cur.execute('SELECT * FROM security WHERE event_end = 1 AND event_ack = 0')
         rows = cur.fetchall()
-        for row in rows: 
-            update.message.reply_video(open(row[1], 'rb'))
-            update_query = 'UPDATE security SET event_ack = 1 WHERE filename LIKE "{}"'.format(row[1])
-            cur.execute(update_query)
 
-        con.commit()
-        con.close()
+        if len(rows) > 0:
+            logging.debug("Found {} events".format(str(len(rows)))) 
+            print("Found {} events".format(str(len(rows)))) 
+            for row in rows: 
+                #update.message.reply_video(open(row[1], 'rb'))
+                print("Watcher: sending video {}".format(row[1]))
+                motionBot.sendVideo(chat_id=update.effective_user.id,video=open(row[1], 'rb'), supports_streaming=True)
+                update_query = 'UPDATE security SET event_ack = 1 WHERE filename LIKE "{}"'.format(row[1])
+                cur.execute(update_query)
+
+            con.commit()
 
         sleep(5)
 
         if exitLoopWatcher.is_set():
             break
+
+    print("Watcher: closing SQLite connection")
+    con.close()
 
 def startWatcher(update: Update, context: CallbackContext) -> None:
     t1 = threading.Thread(target=loopWatcher, args=(update, context)).start() 
@@ -62,7 +75,7 @@ def getClip(update: Update, context: CallbackContext) -> None:
         if resTrans != 0:
             update.message.reply_text("Transcode command returned error: {}".format(str(resTrans)))
         else:
-            update.message.reply_video(open("/tmp/{}.mp4".format(nowStr), 'rb'))
+            update.message.reply_video(open("/tmp/{}.mp4".format(nowStr), 'rb'), supports_streaming=True)
 
 def getDatabaseUpdates(update: Update, context: CallbackContext) -> None:
     con = sqlite3.connect('/data/motion/db/motion.sqlite')
@@ -73,6 +86,7 @@ def getDatabaseUpdates(update: Update, context: CallbackContext) -> None:
         update.message.reply_video(open(row[1], 'rb'))
 
 def opsMotion(update: Update, context: CallbackContext) -> None:
+    logging.info("Executing motion-daemon operation".format())
     if len(context.args) > 0:
         op = context.args[0]
     else:
@@ -100,9 +114,12 @@ if 'TOKEN' not in os.environ:
 else:
     telegramToken = os.environ['TOKEN']
 
+logging.basicConfig(filename='/tmp/py-bot.log', encoding='utf-8', level=logging.DEBUG)
+
 exitLoopWatcher = threading.Event()
 
-updater = Updater(telegramToken)
+motionBot = Bot(token=telegramToken)
+updater = Updater(bot=motionBot)
 updater.dispatcher.add_handler(CommandHandler('hello', hello))
 updater.dispatcher.add_handler(CommandHandler('ip', getIfcfg))
 updater.dispatcher.add_handler(CommandHandler('db', getDatabaseUpdates))
@@ -111,6 +128,8 @@ updater.dispatcher.add_handler(CommandHandler('stop', stopWatcher))
 updater.dispatcher.add_handler(CommandHandler('img', getStillImage))
 updater.dispatcher.add_handler(CommandHandler('video', getClip))
 updater.dispatcher.add_handler(CommandHandler('motion', opsMotion))
+
+logging.info("Starting Telegram bot")
 
 updater.start_polling()
 updater.idle()
