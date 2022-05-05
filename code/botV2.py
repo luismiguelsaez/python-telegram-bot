@@ -26,7 +26,7 @@ def loopWatcher(update: Update, context: CallbackContext) -> None:
             for row in rows: 
                 #update.message.reply_video(open(row[1], 'rb'))
                 print("Watcher: sending video {}".format(row[1]))
-                motionBot.sendVideo(chat_id=update.effective_user.id,video=open(row[1], 'rb'), supports_streaming=True)
+                motionBot.sendVideo(chat_id=update.effective_user.id,video=open(row[1], 'rb'),filename=row[1], supports_streaming=True)
                 update_query = 'UPDATE security SET event_ack = 1 WHERE filename LIKE "{}"'.format(row[1])
                 cur.execute(update_query)
 
@@ -61,10 +61,12 @@ def getClip(update: Update, context: CallbackContext) -> None:
     now = datetime.datetime.now()
     nowStr = now.strftime('%Y%m%d%H%M%S')
     if len(context.args) > 0:
-        duration = context.args[0]
+        print("Creating video with custom duration: {} sec".format(context.args[0]))
+        duration = int(context.args[0])
     else:
-        duration = 5000
-    command = "raspivid -w 400 -h 300 -fps 15 -t {} -o /tmp/{}.h264".format(str(duration), nowStr)
+        duration = 5
+    print("Executing raspivid: {}ms".format(str(duration * 1000)))
+    command = "raspivid -w 400 -h 300 -fps 15 -t {} -o /tmp/{}.h264".format(str(duration * 1000), nowStr)
     res = os.system(command)
 
     if res != 0:
@@ -75,7 +77,7 @@ def getClip(update: Update, context: CallbackContext) -> None:
         if resTrans != 0:
             update.message.reply_text("Transcode command returned error: {}".format(str(resTrans)))
         else:
-            update.message.reply_video(open("/tmp/{}.mp4".format(nowStr), 'rb'), supports_streaming=True)
+            update.message.reply_video(video=open("/tmp/{}.mp4".format(nowStr), 'rb'), duration=duration,supports_streaming=True)
 
 def getDatabaseUpdates(update: Update, context: CallbackContext) -> None:
     con = sqlite3.connect('/data/motion/db/motion.sqlite')
