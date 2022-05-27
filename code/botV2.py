@@ -23,12 +23,16 @@ def loopWatcher(update: Update, context: CallbackContext) -> None:
         if len(rows) > 0:
             logging.debug("Found {} events".format(str(len(rows)))) 
             print("Found {} events".format(str(len(rows)))) 
-            for row in rows: 
-                #update.message.reply_video(open(row[1], 'rb'))
-                print("Watcher: sending video {}".format(row[1]))
-                motionBot.sendVideo(chat_id=update.effective_user.id,video=open(row[1], 'rb'),filename=row[1], supports_streaming=True)
+            for row in rows:
+                if os.path.exists(row[1]):
+                    #update.message.reply_video(open(row[1], 'rb'))
+                    print("Watcher: sending video {}".format(row[1]))
+                    motionBot.sendVideo(chat_id=update.effective_user.id,video=open(row[1], 'rb'),filename=row[1], supports_streaming=True)
+                else:
+                    motionBot.sendMessage(chat_id=update.effective_user.id,text="Video file not found: {}".format(row[1]))
                 update_query = 'UPDATE security SET event_ack = 1 WHERE filename LIKE "{}"'.format(row[1])
                 cur.execute(update_query)
+
 
             con.commit()
 
