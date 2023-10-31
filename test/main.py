@@ -26,15 +26,17 @@ async def loop_database(bot: Bot, update_id: int)->None:
     sqlite_cursor = sqlite_conn.cursor()
     sqlite_cursor.execute('SELECT * FROM security WHERE event_end = 1 AND event_ack = 0')
     rows = sqlite_cursor.fetchall()
-    for row in rows:
+    if len(rows) > 0:
         await bot.send_message(chat_id='15060431', text=f'Got {len(rows)} rows from database')
+    for row in rows:
         if path.exists(row[1]):
             await bot.send_message(chat_id='15060431', text=f'Sending video {row[1]}')
             await bot.send_video(chat_id='15060431',video=open(row[1], 'rb'),filename=row[1], supports_streaming=True)
         else:
             await bot.send_message(chat_id='15060431', text=f'Video file not found: {row[1]}')
-        update_query = 'UPDATE security SET event_ack = 1 WHERE filename LIKE "{}"'.format(row[1])
+        update_query = f'UPDATE security SET event_ack = 1 WHERE filename LIKE "{row[1]}"'
         sqlite_cursor.execute(update_query)
+    sqlite_conn.commit()
     sqlite_conn.close()
     ########################
     await asyncio.sleep(5)
