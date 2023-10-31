@@ -1,11 +1,19 @@
 from telegram import Bot, Update
 from telegram.error import Forbidden, NetworkError
-from os import getenv, path, remove
+from os import getenv, path, remove, system
 import logging
 import asyncio
 import contextlib
 from typing import NoReturn
 import sqlite3
+
+async def manage_motion(op: str = 'start') -> None:
+    logging.info(f"Executing motion-daemon operation {op}")
+
+    command = f"sudo systemctl {op} motion-daemon"
+    command_res = system(command)
+
+    return command_res
 
 async def get_updates(bot: Bot, update_id: int)->int:
     updates = await bot.get_updates(offset=update_id, timeout=10, allowed_updates=Update.ALL_TYPES)
@@ -13,8 +21,13 @@ async def get_updates(bot: Bot, update_id: int)->int:
         logger.info("Processing update %s", update.update_id)
         next_update_id = update.update_id + 1
         if update.message and update.message.text:
-            logger.info("Found message %s!", update.message.text)
-            await update.message.reply_text(update.message.text)
+            logger.info(f"Processing message {update.message.text}")
+            await update.message.reply_text(f"Processing message {update.message.text}")
+            if update.message.text == '/start':
+                return_code = await manage_motion('start')
+            elif update.message.text == '/stop':
+                return_code = await manage_motion('stop')
+            await update.message.reply_text(f"Processed message {update.message.text} with return code {return_code}")
         return next_update_id
     return update_id
 
