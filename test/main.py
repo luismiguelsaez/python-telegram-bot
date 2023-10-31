@@ -1,6 +1,6 @@
 from telegram import Bot, Update
 from telegram.error import Forbidden, NetworkError
-from os import getenv,path
+from os import getenv, path, remove
 import logging
 import asyncio
 import contextlib
@@ -21,7 +21,7 @@ async def echo(bot: Bot, update_id: int)->int:
 
 async def loop_database(bot: Bot, update_id: int)->None:
     logger.info("Looking for database updates ...")
-    # Do database stuff here
+    ########################
     sqlite_conn = sqlite3.connect('/data/motion/db/motion.sqlite')
     sqlite_cursor = sqlite_conn.cursor()
     sqlite_cursor.execute('SELECT * FROM security WHERE event_end = 1 AND event_ack = 0')
@@ -35,6 +35,7 @@ async def loop_database(bot: Bot, update_id: int)->None:
         else:
             await bot.send_message(chat_id='15060431', text=f'Video file not found: {row[1]}')
         update_query = f'UPDATE security SET event_ack = 1 WHERE filename LIKE "{row[1]}"'
+        remove(row[1])
         sqlite_cursor.execute(update_query)
     sqlite_conn.commit()
     sqlite_conn.close()
