@@ -85,6 +85,7 @@ async def main() -> NoReturn:
         except IndexError:
             update_id = None
 
+        await bot.send_message(chat_id='15060431', text=f'Bot started')
         logger.info("Bot listening ...")
 
         await loop_main(bot, update_id)
