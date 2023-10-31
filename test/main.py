@@ -7,8 +7,7 @@ import contextlib
 from typing import NoReturn
 import sqlite3
 
-async def echo(bot: Bot, update_id: int)->int:
-    logger.info("Awaiting updates ...")
+async def get_updates(bot: Bot, update_id: int)->int:
     updates = await bot.get_updates(offset=update_id, timeout=10, allowed_updates=Update.ALL_TYPES)
     for update in updates:
         logger.info("Processing update %s", update.update_id)
@@ -19,9 +18,7 @@ async def echo(bot: Bot, update_id: int)->int:
         return next_update_id
     return update_id
 
-async def loop_database(bot: Bot, update_id: int)->None:
-    logger.info("Looking for database updates ...")
-    ########################
+async def scan_database(bot: Bot, update_id: int)->int:
     sqlite_conn = sqlite3.connect('/data/motion/db/motion.sqlite')
     sqlite_cursor = sqlite_conn.cursor()
     sqlite_cursor.execute('SELECT * FROM security WHERE event_end = 1 AND event_ack = 0')
@@ -39,9 +36,24 @@ async def loop_database(bot: Bot, update_id: int)->None:
         sqlite_cursor.execute(update_query)
     sqlite_conn.commit()
     sqlite_conn.close()
-    ########################
-    await asyncio.sleep(5)
-    return
+
+async def loop_main(bot: Bot, update_id: int)->None:
+
+    while True:
+        logger.info("Awaiting updates ...")
+        try:
+            update_id = await get_updates(bot, update_id)
+        except NetworkError:
+            logger.error("Network error has occurred. Sleeping for 1 second.")
+            await asyncio.sleep(1)
+        except Forbidden:
+            logger.error("Forbiden error has occurred.")
+            update_id += 1
+
+        logger.info("Looking for database updates ...")
+        await scan_database(bot, update_id)
+
+        await asyncio.sleep(1)
 
 
 telegram_token = getenv('TOKEN', None)
@@ -54,6 +66,7 @@ logger = logging.getLogger(__name__)
 
 async def main() -> NoReturn:
     async with Bot(telegram_token) as bot:
+        # Get last update_id and start from there
         try:
             update_id = (await bot.get_updates())[0].update_id
         except IndexError:
@@ -61,15 +74,7 @@ async def main() -> NoReturn:
 
         logger.info("Bot listening ...")
 
-        while True:
-            try:
-                update_id = await loop_database(bot, update_id)
-            except NetworkError:
-                logger.error("Network error has occurred. Sleeping for 1 second.")
-                await asyncio.sleep(1)
-            except Forbidden:
-                logger.error("Forbiden error has occurred.")
-                update_id += 1
+        await loop_main(bot, update_id)
 
 
 if __name__ == "__main__":
