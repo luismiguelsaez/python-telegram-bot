@@ -1,4 +1,4 @@
-python-telegram-bot
+python-telegram-bot>=13.11,14
 requests
 psutil
 subprocess32
