@@ -7,6 +7,9 @@ import contextlib
 from typing import NoReturn
 import sqlite3
 
+async def ssh_tunnel(args: list) -> None:
+    return
+    
 async def manage_motion(op: str = 'start') -> None:
     logging.info(f"Executing motion-daemon operation {op}")
 
@@ -27,6 +30,8 @@ async def get_updates(bot: Bot, update_id: int)->int:
                 return_code = await manage_motion('start')
             elif update.message.text == '/stop':
                 return_code = await manage_motion('stop')
+            elif update.message.text.split(' ')[0] == '/ssh_tunnel':
+                return_code = await ssh_tunnel(update.message.text.split(' ')[1:])
             await update.message.reply_text(f"Processed message {update.message.text} with return code {return_code}")
         return next_update_id
     return update_id
@@ -68,6 +73,26 @@ async def loop_main(bot: Bot, update_id: int)->None:
 
         await asyncio.sleep(1)
 
+async def loop_get_scan_database(bot: Bot, update_id: int)->None:
+    while True:
+        logger.info("Looking for database updates ...")
+        await scan_database(bot, update_id)
+
+        await asyncio.sleep(1)
+
+async def loop_get_updates(bot: Bot, update_id: int)->None:
+
+    while True:
+        logger.info("Awaiting updates ...")
+        try:
+            update_id = await get_updates(bot, update_id)
+        except NetworkError:
+            logger.error("Network error has occurred. Sleeping for 1 second.")
+            await asyncio.sleep(1)
+        except Forbidden:
+            logger.error("Forbiden error has occurred.")
+            update_id += 1
+
 
 telegram_token = getenv('TOKEN', None)
 
@@ -89,6 +114,12 @@ async def main() -> NoReturn:
         logger.info("Bot listening ...")
 
         await loop_main(bot, update_id)
+        
+        #tasks = [
+        #    asyncio.create_task(loop_get_updates(bot, update_id)),
+        #    asyncio.create_task(loop_get_scan_database(bot, update_id)),
+        #]
+        #done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
 
 
 if __name__ == "__main__":
