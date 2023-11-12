@@ -38,7 +38,7 @@ async def get_updates(bot: Bot, update_id: int)->int:
     return update_id
 
 async def scan_database(bot: Bot, update_id: int)->int:
-    sqlite_conn = sqlite3.connect('/data/motion/db/motion.sqlite')
+    sqlite_conn = sqlite3.connect('/data/motion/db/motion.db')
     sqlite_cursor = sqlite_conn.cursor()
     sqlite_cursor.execute('SELECT * FROM security WHERE event_end = 1 AND event_ack = 0')
     rows = sqlite_cursor.fetchall()
