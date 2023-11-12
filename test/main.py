@@ -26,6 +26,7 @@ async def get_updates(bot: Bot, update_id: int)->int:
         if update.message and update.message.text:
             logger.info(f"Processing message {update.message.text}")
             await update.message.reply_text(f"Processing message {update.message.text}")
+            return_code = -1
             if update.message.text == '/start':
                 return_code = await manage_motion('start')
             elif update.message.text == '/stop':
@@ -119,7 +120,7 @@ async def main() -> NoReturn:
         #    asyncio.create_task(loop_get_updates(bot, update_id)),
         #    asyncio.create_task(loop_get_scan_database(bot, update_id)),
         #]
-        #done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+        #done, pending = await asyncio.wait(tasks, return_when=asyncio.ALL_COMPLETED)
 
 
 if __name__ == "__main__":
