@@ -56,35 +56,17 @@ async def scan_database(bot: Bot, update_id: int)->int:
     sqlite_conn.commit()
     sqlite_conn.close()
 
-async def loop_main(bot: Bot, update_id: int)->None:
-
-    while True:
-        logger.info("Awaiting updates ...")
-        try:
-            update_id = await get_updates(bot, update_id)
-        except NetworkError:
-            logger.error("Network error has occurred. Sleeping for 1 second.")
-            await asyncio.sleep(1)
-        except Forbidden:
-            logger.error("Forbiden error has occurred.")
-            update_id += 1
-
-        logger.info("Looking for database updates ...")
-        await scan_database(bot, update_id)
-
-        await asyncio.sleep(1)
-
 async def loop_get_scan_database(bot: Bot, update_id: int)->None:
     while True:
-        logger.info("Looking for database updates ...")
+        logger.debug("Looking for database updates ...")
         await scan_database(bot, update_id)
 
-        await asyncio.sleep(1)
+        await asyncio.sleep(2)
 
 async def loop_get_updates(bot: Bot, update_id: int)->None:
 
     while True:
-        logger.info("Awaiting updates ...")
+        logger.debug("Awaiting updates ...")
         try:
             update_id = await get_updates(bot, update_id)
         except NetworkError:
@@ -96,11 +78,12 @@ async def loop_get_updates(bot: Bot, update_id: int)->None:
 
 
 telegram_token = getenv('TOKEN', None)
+log_level = getenv('LOG_LEVEL', 'INFO')
 
 logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=log_level
 )
-logging.getLogger("httpx").setLevel(logging.INFO)
+logging.getLogger("httpx").setLevel(log_level)
 logger = logging.getLogger(__name__)
 
 async def main() -> NoReturn:
@@ -113,8 +96,6 @@ async def main() -> NoReturn:
 
         await bot.send_message(chat_id='15060431', text=f'Bot started')
         logger.info("Bot listening ...")
-
-        #await loop_main(bot, update_id)
         
         tasks = [
             asyncio.create_task(loop_get_updates(bot, update_id)),
