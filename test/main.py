@@ -114,13 +114,13 @@ async def main() -> NoReturn:
         await bot.send_message(chat_id='15060431', text=f'Bot started')
         logger.info("Bot listening ...")
 
-        await loop_main(bot, update_id)
+        #await loop_main(bot, update_id)
         
-        #tasks = [
-        #    asyncio.create_task(loop_get_updates(bot, update_id)),
-        #    asyncio.create_task(loop_get_scan_database(bot, update_id)),
-        #]
-        #done, pending = await asyncio.wait(tasks, return_when=asyncio.ALL_COMPLETED)
+        tasks = [
+            asyncio.create_task(loop_get_updates(bot, update_id)),
+            asyncio.create_task(loop_get_scan_database(bot, update_id)),
+        ]
+        done, pending = await asyncio.wait(tasks, return_when=asyncio.ALL_COMPLETED)
 
 
 if __name__ == "__main__":
