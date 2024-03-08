@@ -6,6 +6,7 @@ import asyncio
 import contextlib
 from typing import NoReturn
 import sqlite3
+from datetime import datetime
 
 async def ssh_tunnel(args: list) -> None:
     return
@@ -45,8 +46,10 @@ async def scan_database(bot: Bot, update_id: int)->int:
     if len(rows) > 0:
         await bot.send_message(chat_id='15060431', text=f'Got {len(rows)} rows from database')
     for row in rows:
+        # Get event timestamp to use it later
+        ts = datetime.strptime(row[4] , "%Y-%m-%d %H:%M:%S")
         if path.exists(row[1]):
-            await bot.send_message(chat_id='15060431', text=f'Sending video {row[1]}')
+            await bot.send_message(chat_id='15060431', text=f'Sending video [{ts}] {row[1]}')
             await bot.send_video(chat_id='15060431',video=open(row[1], 'rb'),filename=row[1], supports_streaming=True)
         else:
             await bot.send_message(chat_id='15060431', text=f'Video file not found: {row[1]}')
